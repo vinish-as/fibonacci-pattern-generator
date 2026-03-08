@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fibonacci Pattern Generator · iterative visualizer</title>
+    <!-- Font Awesome for icons (clean UI) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background: radial-gradient(circle at 20% 30%, #fff6e8, #f0e7db);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.8rem;
+        }
+
+        /* main app card */
+        .app-container {
+            max-width: 1400px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 3.5rem 3.5rem 3rem 3rem;
+            box-shadow: 0 25px 60px -10px rgba(0, 30, 50, 0.3), inset 0 1px 3px rgba(255,255,255,0.9);
+            border: 1px solid rgba(255,245,235,0.6);
+            overflow: hidden;
+            padding: 2.5rem 2.8rem 3rem;
+        }
+
+        /* header with procedural vibe */
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            margin-bottom: 2.2rem;
+            flex-wrap: wrap;
+        }
+        .header h1 {
+            font-weight: 650;
+            font-size: 2.8rem;
+            letter-spacing: -0.02em;
+            background: linear-gradient(140deg, #2b1e0f, #5f3e28);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            border-right: 3px solid #b88b6e;
+            padding-right: 2rem;
+        }
+        .badge {
+            background: #dbc6b1;
+            color: #2b2b2b;
+            padding: 0.5rem 1.4rem;
+            border-radius: 60px;
+            font-weight: 500;
+            font-size: 1rem;
+            box-shadow: inset 0 -2px 0 #a7866b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .badge i {
+            font-size: 1.1rem;
+            color: #5a3f2b;
+        }
+
+        /* input row + info */
+        .control-panel {
+            background: #f4ece3;
+            border-radius: 4rem 4rem 2rem 2rem;
+            padding: 2rem 2.2rem;
+            margin-bottom: 2.8rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 2rem;
+            border: 1px solid #e5d5c5;
+            box-shadow: 0 8px 12px -8px rgba(90, 60, 40, 0.2);
+        }
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .input-group label {
+            font-weight: 600;
+            color: #4b3621;
+            font-size: 1.2rem;
+        }
+        .input-group input {
+            background: white;
+            border: none;
+            padding: 1rem 1.5rem;
+            font-size: 1.3rem;
+            width: 110px;
+            border-radius: 3rem;
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.05), 0 2px 4px #fff3e9;
+            border: 1px solid #dccbbd;
+            font-weight: 600;
+            text-align: center;
+            color: #2f2016;
+            transition: 0.2s;
+        }
+        .input-group input:focus {
+            outline: 2px solid #b48d70;
+            border-color: transparent;
+        }
+        .input-group button {
+            background: #8b6c51;
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 1rem 2.4rem;
+            border-radius: 3rem;
+            font-size: 1.2rem;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            cursor: pointer;
+            transition: 0.15s;
+            box-shadow: 0 8px 18px -6px #73553b;
+            border: 1px solid #ab8f77;
+        }
+        .input-group button:hover {
+            background: #785f48;
+            transform: scale(1.02);
+            box-shadow: 0 12px 22px -8px #73553b;
+        }
+        .step-hint {
+            color: #3b2d20;
+            background: #e9dbd0;
+            border-radius: 60px;
+            padding: 0.9rem 2rem;
+            font-weight: 500;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px dashed #ab8f77;
+        }
+        .step-hint i {
+            font-size: 1.3rem;
+        }
+
+        /* main grid: left (patterns) / right (trace + viz) */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1.3fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2.5rem;
+        }
+
+        /* left side — number pattern & triangle */
+        .pattern-area {
+            background: rgba(253, 249, 243, 0.7);
+            border-radius: 2.5rem;
+            padding: 1.8rem 2rem;
+            border: 1px solid #f0dfd0;
+            backdrop-filter: blur(6px);
+        }
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 620;
+            margin-bottom: 1.2rem;
+            color: #4d3623;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            border-bottom: 2px solid #dac2af;
+            padding-bottom: 0.6rem;
+        }
+        .section-title i {
+            color: #976b4b;
+        }
+        .seq-block {
+            background: #fefcf9;
+            border-radius: 2rem;
+            padding: 1.5rem;
+            box-shadow: inset 0 1px 6px #fff, 0 6px 14px -10px #846b56;
+            margin-bottom: 2rem;
+            border: 1px solid #ebd9cb;
+            word-break: break-word;
+        }
+        .seq-numbers {
+            font-size: 1.4rem;
+            font-weight: 500;
+            color: #2d1f13;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.25rem 0.7rem;
+        }
+        .seq-numbers span {
+            background: #f3e8df;
+            padding: 0.2rem 1rem;
+            border-radius: 30px;
+            border: 1px solid #dccbbd;
+        }
+        .triangle-block {
+            background: #fefcf9;
+            border-radius: 2rem;
+            padding: 1.5rem;
+            border: 1px solid #ebd9cb;
+            font-family: 'Courier New', monospace;
+        }
+        .triangle-output {
+            background: #2b241e;
+            color: #f2d9c0;
+            padding: 1.6rem 1.2rem;
+            border-radius: 1.8rem;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            white-space: pre;
+            overflow-x: auto;
+            box-shadow: inset 0 0 0 2px #5d4b3a;
+            margin-top: 1rem;
+            border: 1px solid #bb9e87;
+        }
+
+        /* right side — step-by-step trace + spiral */
+        .trace-area {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+        .trace-card {
+            background: #fcf5ed;
+            border-radius: 2rem;
+            padding: 1.8rem;
+            border: 1px solid #eddacb;
+        }
+        .var-box {
+            background: #e3d5c8;
+            border-radius: 1.6rem;
+            padding: 1.2rem 1.5rem;
+            font-size: 1.3rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            font-weight: 600;
+            color: #402f1f;
+            margin-bottom: 1.2rem;
+            border: 1px solid #cbb7a4;
+        }
+        .var-highlight {
+            background: #b7977c;
+            color: white;
+            padding: 0.3rem 1rem;
+            border-radius: 2rem;
+        }
+        .iteration-log {
+            max-height: 140px;
+            overflow-y: auto;
+            background: #f2e6db;
+            padding: 1rem 1.4rem;
+            border-radius: 2rem;
+            font-size: 0.95rem;
+            color: #382b1f;
+            border: 1px solid #e1cfbd;
+            font-family: 'Fira Code', monospace;
+        }
+        .iteration-log div {
+            border-bottom: 1px dashed #cbb59e;
+            padding: 0.3rem 0;
+        }
+
+        .spiral-container {
+            background: #f2e7dd;
+            border-radius: 2rem;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid #eddacb;
+        }
+        canvas {
+            display: block;
+            margin: 1rem auto 0;
+            background: #fcf6ef;
+            border-radius: 2rem;
+            box-shadow: 0 6px 16px -8px #5f4d3b;
+            width: 100%;
+            height: auto;
+            border: 1px solid #d6c0ab;
+        }
+
+        /* footer note */
+        .footnote {
+            margin-top: 2.5rem;
+            display: flex;
+            justify-content: center;
+            color: #6b5844;
+            font-weight: 450;
+            gap: 2rem;
+            align-items: center;
+        }
+        .footnote i {
+            margin-right: 0.4rem;
+            color: #946b4b;
+        }
+
+        /* small responsive */
+        @media (max-width: 900px) {
+            .dashboard { grid-template-columns: 1fr; }
+            .app-container { padding: 1.8rem; }
+            .header h1 { font-size: 2.2rem; }
+        }
+        .error-msg {
+            color: #c03b2b;
+            font-weight: 600;
+            padding: 0.5rem 1.2rem;
+            background: #ffeae3;
+            border-radius: 3rem;
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <!-- header with algorithm A4 flavor -->
+    <div class="header">
+        <h1><i class="fas fa-sync-alt" style="color:#896b51; margin-right: 12px;"></i>procedure A4 · Fibonacci</h1>
+        <div class="badge"><i class="fas fa-code"></i> iterative · fnm2, fnm1, fn</div>
+    </div>
+
+    <!-- input panel exactly matching spec -->
+    <div class="control-panel">
+        <div class="input-group">
+            <label for="nInput">n =</label>
+            <input type="number" id="nInput" min="0" value="8" step="1">
+            <button id="generateBtn"><i class="fas fa-play"></i> generate</button>
+        </div>
+        <div class="step-hint">
+            <i class="fas fa-tasks"></i> follows A4: fnm2←0; fnm1←1; for i←2 to n do fn←fnm1+fnm2 …
+        </div>
+    </div>
+
+    <!-- main interactive area -->
+    <div class="dashboard" id="dashboardMain">
+        <!-- left column: number pattern & triangle pattern -->
+        <div class="pattern-area">
+            <div class="section-title"><i class="fas fa-list-ol"></i> number pattern (sequence)</div>
+            <div class="seq-block" id="sequenceDisplay">
+                <div class="seq-numbers">—</div>
+            </div>
+
+            <div class="section-title"><i class="fas fa-layer-group"></i> triangular pattern</div>
+            <div class="triangle-block">
+                <div style="font-weight: 500; margin-bottom: 0.6rem;">⬇️ each row = Fibonacci numbers</div>
+                <div id="triangleDisplay" class="triangle-output">(enter n ≥ 1)</div>
+            </div>
+        </div>
+
+        <!-- right column: step‑by‑step variable trace + spiral visualization -->
+        <div class="trace-area">
+            <div class="trace-card">
+                <div class="section-title"><i class="fas fa-microchip"></i> variable trace (fnm2, fnm1, fn)</div>
+                <div class="var-box" id="varBox">
+                    <span><span class="var-highlight">fnm2</span> <span id="fnm2val">0</span></span>
+                    <span><span class="var-highlight">fnm1</span> <span id="fnm1val">1</span></span>
+                    <span><span class="var-highlight">fn</span> <span id="fnval">1</span></span>
+                </div>
+                <div id="iterationContainer" class="iteration-log">
+                    <div>← iteration steps will appear here</div>
+                </div>
+            </div>
+
+            <div class="spiral-container">
+                <div class="section-title"><i class="fas fa-draw-polygon"></i> Fibonacci spiral (arcs)</div>
+                <canvas id="fibCanvas" width="400" height="280" style="width:100%; height:auto; max-width:400px"></canvas>
+                <p style="margin-top: 0.6rem; color:#7d6652;"><i class="fas fa-paint-brush"></i> based on sequence values</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- footer -->
+    <div class="footnote">
+        <span><i class="fas fa-calculator"></i> iterative algorithm A4</span>
+        <span><i class="fas fa-shapes"></i> patterns & visualization</span>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // ----- DOM elements -----
+        const nInput = document.getElementById('nInput');
+        const generateBtn = document.getElementById('generateBtn');
+        const sequenceDisplay = document.getElementById('sequenceDisplay').querySelector('.seq-numbers');
+        const triangleDisplay = document.getElementById('triangleDisplay');
+        const fnm2Span = document.getElementById('fnm2val');
+        const fnm1Span = document.getElementById('fnm1val');
+        const fnSpan = document.getElementById('fnval');
+        const iterationContainer = document.getElementById('iterationContainer');
+        const canvas = document.getElementById('fibCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // default size
+        canvas.width = 400;
+        canvas.height = 280;
+
+        // ----- helper: generate Fibonacci sequence & trace (iterative) -----
+        function computeFibonacciWithTrace(n) {
+            // special cases exactly like A4: n<0 error, n=0 print 0 stop, n=1 print 1 stop
+            if (n < 0) return { error: 'error (negative input)' };
+            if (n === 0) return { seq: [0], traceSteps: [], finalFnm2: 0, finalFnm1: 0, finalFn: 0 };
+            if (n === 1) return { seq: [1], traceSteps: [], finalFnm2: 0, finalFnm1: 1, finalFn: 1 }; // fnm1 = 1 (as start)
+
+            // for n>=2 iterative procedure
+            let fnm2 = 0;
+            let fnm1 = 1;
+            let fn = 1;  // will be overwritten from i=2
+            const seq = [0, 1];   // first two terms
+            const steps = [];
+
+            // we store initial state (before loop) for clarity
+            steps.push({ i: 'start', fnm2, fnm1, fn: 1 });
+
+            for (let i = 2; i <= n; i++) {
+                fn = fnm1 + fnm2;           // core step
+                seq.push(fn);
+                steps.push({ i, fnm2, fnm1, fn });
+                // shift for next iteration
+                fnm2 = fnm1;
+                fnm1 = fn;
+            }
+            // after loop final variables: for n>=2, after loop ends, fn is last computed,
+            // fnm2 = previous fnm1, fnm1 = last fn.
+            return { seq, traceSteps: steps, finalFnm2: fnm2, finalFnm1: fnm1, finalFn: fn };
+        }
+
+        // ----- render number pattern (just the sequence) -----
+        function renderNumberPattern(seq) {
+            if (!seq || seq.length === 0) {
+                sequenceDisplay.innerHTML = '—';
+                return;
+            }
+            let html = '';
+            seq.forEach((num, idx) => {
+                html += `<span>F<sub>${idx}</sub> = ${num}</span> `;
+            });
+            sequenceDisplay.innerHTML = html;
+        }
+
+        // ----- render triangular pattern (each row repeats Fibonacci numbers) -----
+        function renderTrianglePattern(seq) {
+            if (!seq || seq.length === 0) {
+                triangleDisplay.innerText = '(no triangle)';
+                return;
+            }
+            let lines = [];
+            for (let row = 0; row < seq.length; row++) {
+                let rowNums = [];
+                for (let col = 0; col <= row; col++) {
+                    // triangular pattern: use fib number at index col (but careful not to overflow)
+                    if (col < seq.length) {
+                        rowNums.push(seq[col]);
+                    } else {
+                        rowNums.push(seq[seq.length-1]); // fallback
+                    }
+                }
+                lines.push(rowNums.join('  '));
+            }
+            triangleDisplay.innerText = lines.join('\n');
+        }
+
+        // ----- draw Fibonacci spiral (simple arcs using ratios) -----
+        function drawSpiral(seq) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (!seq || seq.length < 2) {
+                ctx.font = 'italic 14px Inter';
+                ctx.fillStyle = '#998f86';
+                ctx.fillText('need at least 2 terms', 100, 140);
+                return;
+            }
+
+            // scale factor to fit canvas (max radius ~ 110)
+            const scale = 7; 
+            let x = 200, y = 140; // center offset
+            let direction = 0; // 0: right, 1: up, 2: left, 3: down
+            let sideLength = seq[1] * scale; // start with F1
+
+            ctx.beginPath();
+            ctx.strokeStyle = '#7f5e48';
+            ctx.lineWidth = 2.2;
+
+            // we will draw quarter circles based on consecutive fib numbers
+            for (let i = 2; i < seq.length; i++) {
+                let fibVal = seq[i];
+                let radius = fibVal * scale * 0.5; // half for nicer arcs
+                if (radius < 4) radius = 4; // minimal visibility
+
+                let startAngle, endAngle;
+                // define quadrant based on direction
+                switch (direction % 4) {
+                    case 0: // facing right, arc center to the left relative to square? typical spiral: start from (x - previous, y) etc.
+                        // we draw arc where center is at (x - radius, y) for a top-left quadrant? Simpler: arc from current pen
+                        // let's implement a growing quarter-circle: direction 0: arc from angle 0 to pi/2 (right-down)
+                        startAngle = 0; endAngle = Math.PI/2;
+                        ctx.arc(x, y, radius, startAngle, endAngle);
+                        x = x + radius; // update end point
+                        y = y + radius;
+                        break;
+                    case 1: // up: arc from pi/2 to pi
+                        startAngle = Math.PI/2; endAngle = Math.PI;
+                        ctx.arc(x, y, radius, startAngle, endAngle);
+                        x = x - radius;
+                        y = y + radius;
+                        break;
+                    case 2: // left: arc from pi to 3pi/2
+                        startAngle = Math.PI; endAngle = 3*Math.PI/2;
+                        ctx.arc(x, y, radius, startAngle, endAngle);
+                        x = x - radius;
+                        y = y - radius;
+                        break;
+                    case 3: // down: arc from 3pi/2 to 2pi
+                        startAngle = 3*Math.PI/2; endAngle = 2*Math.PI;
+                        ctx.arc(x, y, radius, startAngle, endAngle);
+                        x = x + radius;
+                        y = y - radius;
+                        break;
+                }
+                direction++;
+            }
+            ctx.strokeStyle = '#946b4b';
+            ctx.lineWidth = 2.5;
+            ctx.stroke();
+
+            // mark start
+            ctx.fillStyle = '#ac8870';
+            ctx.beginPath();
+            ctx.arc(200, 140, 5, 0, 2*Math.PI);
+            ctx.fill();
+            ctx.fillStyle = '#4f3e30';
+            ctx.font = 'bold 12px Inter';
+            ctx.fillText('start', 170, 120);
+        }
+
+        // ----- update trace UI (variable box + iteration log) -----
+        function updateTraceUI(seq, traceSteps, n) {
+            if (!seq || seq.length === 0) {
+                fnm2Span.innerText = '0';
+                fnm1Span.innerText = '0';
+                fnSpan.innerText = '0';
+                iterationContainer.innerHTML = '<div>— no trace —</div>';
+                return;
+            }
+
+            // special cases n=0,1: set variable display according to A4
+            if (n === 0) {
+                fnm2Span.innerText = '0';
+                fnm1Span.innerText = '0';
+                fnSpan.innerText = '0';
+                iterationContainer.innerHTML = '<div>n = 0 → print 0; stop (no loop)</div>';
+                return;
+            }
+            if (n === 1) {
+                fnm2Span.innerText = '0';
+                fnm1Span.innerText = '1';
+                fnSpan.innerText = '1';
+                iterationContainer.innerHTML = '<div>n = 1 → print 1; stop (initial: fnm2=0, fnm1=1)</div>';
+                return;
+            }
+
+            if (traceSteps && traceSteps.length > 0) {
+                // last step holds final fn (but after loop we have updated variables)
+                const last = traceSteps[traceSteps.length - 1];
+                fnm2Span.innerText = last.fnm2;   // after loop fnm2 is previous fnm1
+                fnm1Span.innerText = last.fnm1;
+                fnSpan.innerText = last.fn;
+
+                let logHtml = '';
+                traceSteps.forEach(step => {
+                    if (step.i === 'start') {
+                        logHtml += `<div>🔹 init → fnm2=${step.fnm2}, fnm1=${step.fnm1}, fn=1</div>`;
+                    } else {
+                        logHtml += `<div> i = ${step.i}  ➔  fn = fnm1 + fnm2 = ${step.fnm1} + ${step.fnm2} = ${step.fn}  |  fnm2←${step.fnm2}  fnm1←${step.fnm1}</div>`;
+                    }
+                });
+                iterationContainer.innerHTML = logHtml;
+            } else {
+                iterationContainer.innerHTML = '<div>— trace only for n>=2 —</div>';
+            }
+        }
+
+        // ----- main update -----
+        function updateAll() {
+            let rawValue = nInput.value.trim();
+            let n = parseInt(rawValue, 10);
+            if (isNaN(n)) {
+                // fallback
+                n = 0;
+            }
+
+            const result = computeFibonacciWithTrace(n);
+            if (result.error) {
+                sequenceDisplay.innerHTML = `<span class="error-msg"><i class="fas fa-exclamation-triangle"></i> ${result.error}</span>`;
+                triangleDisplay.innerText = 'error: negative input';
+                fnm2Span.innerText = '-'; fnm1Span.innerText = '-'; fnSpan.innerText = '-';
+                iterationContainer.innerHTML = '<div>⛔ stop: error</div>';
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#baa086'; ctx.font = '16px Inter'; ctx.fillText('invalid n', 150, 140);
+                return;
+            }
+
+            const seq = result.seq;
+            renderNumberPattern(seq);
+            renderTrianglePattern(seq);
+
+            // for n=0, seq = [0]; n=1 [1]; else full seq
+            updateTraceUI(seq, result.traceSteps || [], n);
+
+            // draw spiral
+            if (seq.length >= 2) {
+                drawSpiral(seq);
+            } else {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#b39b87';
+                ctx.font = '14px Inter';
+                ctx.fillText('not enough terms for spiral', 100, 140);
+            }
+        }
+
+        // initial call (default n=8)
+        updateAll();
+
+        // event listener
+        generateBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            updateAll();
+        });
+
+        // also allow Enter key
+        nInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                updateAll();
+            }
+        });
+    })();
+</script>
+<!-- small note: algorithm A4 strictly followed – error/0/1 base cases, iterative loop fnm2/fnm1/fn -->
+</body>
+</html>
