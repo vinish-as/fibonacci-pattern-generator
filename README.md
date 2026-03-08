@@ -44,20 +44,4 @@ end A4
 - Font Awesome Icons
 - Canvas API for spiral drawing
 
-## Live Demo
-
-[https://your-username.github.io/fibonacci-pattern-generator/](https://your-username.github.io/fibonacci-pattern-generator/)
-
-*(Replace 'your-username' with your actual GitHub username)*
-
-## Screenshots
-
-*(You can add screenshots here later)*
-
-## Author
-
-Your Name
-
-## License
-
 This project is open source and available under the [MIT License](LICENSE).
